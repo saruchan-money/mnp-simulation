@@ -1,4 +1,4 @@
-# MNP回線管理ツール
+# MNP収益シミュレーションツール
 
 ## ライセンス
 © 2025 kurosun100. All rights reserved.
