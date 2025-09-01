@@ -55,20 +55,23 @@
         // maxLines: MNP報酬計算で使用する最大回線数（実際のキャンペーン上限）
         // reward: 1回線あたりの報酬額
         const CARRIERS = {
+            'docomo': { name: 'NTTドコモ', maxLines: 2, reward: 3000 },
+            'au': { name: 'au', maxLines: 0, reward: 0 },
             'softbank': { name: 'ソフトバンク', maxLines: 5, reward: 3000 },
             'ymobile': { name: 'ワイモバイル', maxLines: 5, reward: 3000 },
             'uq': { name: 'UQモバイル', maxLines: 3, reward: 3000 },
-            'docomo': { name: 'NTTドコモ', maxLines: 2, reward: 3000 },
-            'biglobe': { name: 'BIGLOBEモバイル', maxLines: 2, reward: 3000 }
+            'biglobe': { name: 'BIGLOBEモバイル', maxLines: 2, reward: 3000 },
+            'other': { name: 'その他(格安SIM)', maxLines: 0, reward: 0 }
         };
 
         // Wi-Fi設定
         // max: MNP報酬計算で使用する最大契約数（実際のキャンペーン上限）
         // reward: 1契約あたりの報酬額
         const WIFI_CONFIG = {
+            'docomo': { name: 'NTTドコモ', max: 1, reward: 7000 },
+            'au': { name: 'au', max: 0, reward: 0 } ,
             'softbank_ymobile': { name: 'ソフトバンク・ワイモバイル', max: 1, reward: 7000 },
-            'uq': { name: 'UQモバイル', max: 1, reward: 7000 },
-            'docomo': { name: 'NTTドコモ', max: 1, reward: 7000 }
+            'uq': { name: 'UQモバイル', max: 1, reward: 7000 }
         };
 
         // フォーム入力用の上限設定（実際に持っている回線数入力用）
@@ -76,17 +79,20 @@
         const FORM_LIMITS = {
             // 回線入力フォームの上限値
             lines: {
+                'docomo': 10,
+                'au': 10,
                 'softbank': 10,
                 'ymobile': 10, 
                 'uq': 10,
-                'docomo': 10,
-                'biglobe': 10
+                'biglobe': 10,
+                'other': 10
             },
             // Wi-Fi入力フォームの上限値
             wifi: {
+                'docomo': 5,
+                'au': 5,
                 'softbank_ymobile': 5,
-                'uq': 5,
-                'docomo': 5
+                'uq': 5
             }
         };
 
@@ -426,7 +432,14 @@
             };
 
             const handleChange = (carrierId, value) => {
-                const numValue = Math.min(Math.max(0, parseInt(value) || 0), FORM_LIMITS.lines[carrierId]);
+                // 空文字の場合は0、数値以外は無視
+                if (value === '') {
+                    setFormData(prev => ({ ...prev, [carrierId]: 0 }));
+                    return;
+                }
+                // 先頭0を削除してから数値変換
+                const cleanValue = value.replace(/^0+/, '') || '0';
+                const numValue = Math.min(Math.max(0, parseInt(cleanValue) || 0), FORM_LIMITS.lines[carrierId]);
                 setFormData(prev => ({ ...prev, [carrierId]: numValue }));
             };
 
@@ -449,15 +462,16 @@
                                             {carrier.name}
                                         </label>
                                         <div className="flex items-center space-x-2">
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max={FORM_LIMITS.lines[carrierId]}
+                                            <select
                                                 value={formData[carrierId] || 0}
                                                 onChange={(e) => handleChange(carrierId, e.target.value)}
-                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
                                                 style={{ fontSize: '16px' }}
-                                            />
+                                                >
+                                                {Array.from({length: FORM_LIMITS.lines[carrierId] + 1}, (_, i) => (
+                                                    <option key={i} value={i}>{i}</option>
+                                                ))}
+                                            </select>
                                             <span className="text-sm text-gray-600 w-8">回線</span>
                                         </div>
                                     </div>
@@ -527,15 +541,16 @@
                                             {wifi.name}
                                         </label>
                                         <div className="flex items-center space-x-2">
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max={FORM_LIMITS.wifi[wifiId]}
+                                            <select
                                                 value={formData[wifiId] || 0}
                                                 onChange={(e) => handleChange(wifiId, e.target.value)}
-                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
                                                 style={{ fontSize: '16px' }}
-                                            />
+                                                >
+                                                {Array.from({length: FORM_LIMITS.wifi[wifiId] + 1}, (_, i) => (
+                                                    <option key={i} value={i}>{i}</option>
+                                                ))}
+                                            </select>
                                             <span className="text-sm text-gray-600 w-8">契約</span>
                                         </div>
                                     </div>
